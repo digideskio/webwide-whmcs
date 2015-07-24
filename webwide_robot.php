@@ -53,19 +53,22 @@ class WWRobot {
 
 	public function success()
 	{
-		return (!$this->response || @$this->response->returncode != 200) ? false : true;
+		if(!$this->response) return false;
+		if(!isset($this->response->status)) return false;
+		if(substr($this->response->status, 0, 1) != '2') return false;
+		return true;
 	}
 
 	public function getErrorMessage()
 	{
-		$message = is_array($this->response->returnmessage) ? implode(" | ", $this->response->returnmessage) : $this->response->returnmessage;
+		$message = is_array($this->response->message) ? implode(" | ", $this->response->message) : $this->response->message;
 		return $this->success() ? '' : $message;
 	}
 
 	public function getErrorCode()
 	{
-		if(!$this->response || !$this->response->returncode) return 500;
-		return $this->response->returncode;
+		if(!$this->response || !$this->response->status) return 500;
+		return $this->response->status;
 	}
 
 }

@@ -1,7 +1,7 @@
 <?php
 // ****************************************************************************
 // *                                                                          *
-// * WebWide WHMCS Registrar Module 1.0.0 alpha                               *
+// * WebWide WHMCS Registrar Module 1.0.1 Alpha                               *
 // * Homepage: http://api.webwide.net                                         *
 // *                                                                          *
 // * Copyright 2015 WebWide Internet Communication GmbH                       *
@@ -70,7 +70,7 @@ function webwide_AdminCustomButtonArray()
 
 function webwide_RegisterDomain($params, $transfer=false)
 {
-	$types = array('ownercontact'=>'','admincontact'=>'admin','techcontact'=>'tech','billingcontact'=>'billing');
+	$types = array('owner'=>'','admin'=>'admin','tech'=>'tech','billing'=>'billing');
 	$robot = new WWRobot($params);
 
 	// Structurize and create contact handles
@@ -79,7 +79,7 @@ function webwide_RegisterDomain($params, $transfer=false)
 		// Use admincontact for tech and billing, if not provided by WHMCS
 		if(!isset($params[$whmcsType.'lastname']))
 		{
-			if($wwType == 'techcontact' || $wwType == 'billingcontact') $params[$wwType] = $params['admincontact'];
+			if($wwType == 'tech' || $wwType == 'billing') $params[$wwType] = $params['admin'];
 			continue;
 		}
 
@@ -107,10 +107,10 @@ function webwide_RegisterDomain($params, $transfer=false)
 	$robot->call('POST', 'domains', array(
 		'action' 			=> $transfer?'CHPROV':'CREATE',
 		'domain' 			=> $params['sld'].'.'.$params['tld'],
-		'ownercontact' 		=> $params['ownercontact'],
-		'admincontact' 		=> $params['admincontact'],
-		'techcontact' 		=> $params['techcontact'],
-		'billingcontact' 	=> $params['billingcontact'],
+		'owner'		 		=> $params['owner'],
+		'admin' 			=> $params['admin'],
+		'tech' 				=> $params['tech'],
+		'billing' 			=> $params['billing'],
 		'nameserver1' 		=> $params['ns1'],
 		'nameserver2' 		=> $params['ns2'],
 		'nameserver3' 		=> $params['ns3'],
@@ -222,7 +222,7 @@ function webwide_GetContactDetails($params)
 {
 	$values = array();
 	$robot = new WWRobot($params);
-	$types = array('Registrant'=>'ownercontact','Admin'=>'admincontact','Tech'=>'techcontact','Billing'=>'billingcontact');
+	$types = array('Registrant'=>'owner','Admin'=>'admin','Tech'=>'tech','Billing'=>'billing');
 
 	// Get contact handles through domain info request
 	$robot->call('GET', 'domains/'.$params['sld'].'.'.$params['tld']);
@@ -253,7 +253,7 @@ function webwide_SaveContactDetails($params)
 {
 	$handles = array();
 	$robot = new WWRobot($params);
-	$types = array('Registrant'=>'ownercontact','Admin'=>'admincontact','Tech'=>'techcontact','Billing'=>'billingcontact');
+	$types = array('Registrant'=>'owner','Admin'=>'admin','Tech'=>'tech','Billing'=>'billing');
 
 	// Structurize and create contact handles
 	foreach($types as $whmcsType=>$wwType)
@@ -381,7 +381,7 @@ function webwide_Sync($params)
 
 	$values = array('active' => true);
 	$state = $robot->get('state');
-	$expirydate = $robot->get('expirydate');
+	$expirydate = $robot->get('expiredate');
 	$registrationdate = $robot->get('regdate');
 
 	if($registrationdate) $values['registrationdate'] = $registrationdate;
@@ -404,7 +404,7 @@ function webwide_TransferSync($params)
 
 	$values = array('completed' => false);
 	$transferstate = $robot->get('transferstate');
-	$expirydate = $robot->get('expirydate');
+	$expirydate = $robot->get('expiredate');
 	$regdate = $robot->get('regdate');
 
 	if($transferstate == 'done' || $transferstate == 'none')
